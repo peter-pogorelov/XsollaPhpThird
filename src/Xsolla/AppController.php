@@ -3,29 +3,34 @@
 namespace Xsolla {
 	use \Symfony\Component\HttpFoundation\Request as Request;
 	use \Symfony\Component\HttpFoundation\Response as Response;
+	use Xsolla\Message\MessageConverter as MessageConverter;
+	use Xsolla\Storage\Storage as Storage;
 	
 	class AppController {
-		private $table = null;
+		private $model = null;
 		
 		//Not optimal way of manipulating data because cache is reloaded
 		//each time page reloads. Better do it when server starts.
 		public function __construct($storage_type = 'csv') {
-			$this->table = new CSVTable();
-			$this->table->load();
-		
-			MessageConverter::instance()->registerFormatter('application/json', new MessageJSON());
-			MessageConverter::instance()->registerFormatter('application/xml', new MessageXML());
+			$factory = Storage::instance()->getFactory($storage_type);
+			if($factory != null){
+				$this->model = $factory->createStorage();
+				$this->model->load();
+			}
+			else {
+				die('Not supported storage type!');
+			}
 		}
 		
 		public function __destruct() {
-			$this->table->save();
+			$this->model->save();
 		}
 		
 		public function getRows(Request $request){
 			$content_type = $request->headers->get('Content-Type');
 			$formatter = MessageConverter::instance()->getFormatter($content_type);
 			if($formatter != null)
-				return new Response($formatter->encode($this->table->getRows()), 200);
+				return new Response($formatter->encode($this->model->getRows()), 200);
 			else
 				return new Response('This content type is not supported!', 500);
 		}
@@ -36,7 +41,7 @@ namespace Xsolla {
 			if($formatter != null)
 			{
 				$row = $formatter->decode($request->getContent());
-				$this->table->addRow($row);
+				$this->model->addRow($row);
 				return new Response('Successfully added', 201);
 			} else
 				return new Response('This content type is not supported!', 500);
@@ -48,8 +53,8 @@ namespace Xsolla {
 			if($formatter != null)
 			{
 				return new Response($formatter->encode(array(
-						$this->table->getHeaders(),
-						$this->table->getRow($offset)
+						$this->model->getHeaders(),
+						$this->model->getRow($offset)
 					)), 200);
 			} else
 				return new Response('This content type is not supported!', 500);
@@ -61,14 +66,14 @@ namespace Xsolla {
 			if($formatter != null)
 			{
 				$row = $formatter->decode($request->getContent());
-				$result = $this->table->updateRow($offset, $row);
+				$result = $this->model->updateRow($offset, $row);
 				return new Response('', $result ? 201 : 500);
 			} else
 				return new Response('This content type is not supported!', 500);
 		}
 		
 		public function deleteRow(Request $request, $offset) {
-			$this->table->deleteRow($offset);
+			$this->model->deleteRow($offset);
 			return new Response('', 200);
 		}
 	}

@@ -6,7 +6,10 @@
     },
     "autoload": {
         "psr-4": {
-			"Xsolla\\": "src/Xsolla/"
+			"Xsolla\\": "src/Xsolla/",
+			"Xsolla\\Message\\": "src/Xsolla/Message",
+			"Xsolla\\Storage\\": "src/Xsolla/Storage",
+			"Xsolla\\Model\\": "src/Xsolla/Model"
 		}
     }
 }
