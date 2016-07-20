@@ -8,11 +8,12 @@ namespace Xsolla {
 	
 	class AppController {
 		private $model = null;
+		private $storage_type = 'sql';
 		
 		//Not optimal way of manipulating data because cache is reloaded
 		//each time page reloads. Better do it when server starts.
-		public function __construct($storage_type = 'csv') {
-			$factory = Storage::instance()->getFactory($storage_type);
+		public function __construct() {
+			$factory = Storage::instance()->getFactory($this->storage_type);
 			if($factory != null){
 				$this->model = $factory->createStorage();
 				$this->model->load();
