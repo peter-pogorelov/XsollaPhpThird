@@ -1,0 +1,12 @@
+{
+    "name": "xsollas/summer-school",
+    "require": {
+        "symfony/http-foundation": "^3.1",
+        "silex/silex": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+			"Xsolla\\": "src/Xsolla/"
+		}
+    }
+}
